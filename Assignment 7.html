@@ -1,0 +1,128 @@
+<html>
+<head>
+    <title>JavaScript Calendar</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
+        .controls { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
+        select, button { padding: 8px; margin: 0 5px; font-size: 16px; border: 1px solid #007bff; border-radius: 4px; }
+        button { background-color: #007bff; color: white; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #calendar-container { margin-top: 20px; }
+        .calendar-title { text-align: center; color: #333; margin-bottom: 10px; }
+        table { border-collapse: collapse; width: 100%; max-width: 500px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #007bff; color: white; }
+        .day-cell { background-color: #e6f7ff; }
+        .empty-cell { background-color: #f1f1f1; }
+        .today { background-color: #ffcc00; font-weight: bold; color: #333; border: 2px solid orange; }
+    </style>
+</head>
+<body>
+
+    <h1>Custom Calendar Generator</h1>
+    
+    <div class="controls">
+        <label for="month-select">Month:</label>
+        <select id="month-select"></select>
+
+        <label for="year-input">Year:</label>
+        <input type="number" id="year-input" min="1900" max="2100" value="2025">
+
+        <button onclick="generateCalendar()">Generate Calendar</button>
+    </div>
+
+    <div id="calendar-container">
+        </div>
+
+    <script>
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        // Helper function to populate the month dropdown
+        function populateMonthDropdown() {
+            const monthSelect = document.getElementById('month-select');
+            const currentMonth = new Date().getMonth();
+            
+            monthNames.forEach((name, index) => {
+                const option = document.createElement('option');
+                option.value = index; // JavaScript months are 0-indexed
+                option.textContent = name;
+                if (index === currentMonth) {
+                    option.selected = true; // Select the current month by default
+                }
+                monthSelect.appendChild(option);
+            });
+        }
+
+            function generateCalendar() {
+            const monthSelect = document.getElementById('month-select');
+            const yearInput = document.getElementById('year-input');
+            const container = document.getElementById('calendar-container');
+            const month = parseInt(monthSelect.value); // 0-11
+            const year = parseInt(yearInput.value);
+            if (isNaN(month) || isNaN(year) || year < 1000 || year > 3000) {
+                container.innerHTML = "<p style='color: red;'>Please select a valid month and enter a valid year.</p>";
+                return;
+            }
+            container.innerHTML = `<h2 class="calendar-title">${monthNames[month]} ${year}</h2>`;
+            const table = document.createElement('table');
+            const tableBody = document.createElement('tbody');
+            const firstDayOfMonth = new Date(year, month, 1);
+            const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 (Sun) - 6 (Sat)
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+            const currentDay = today.getDate();
+            let headerRow = document.createElement('tr');
+            daysOfWeek.forEach(day => {
+                let th = document.createElement('th');
+                th.textContent = day;
+                headerRow.appendChild(th);
+            });
+            tableBody.appendChild(headerRow);
+            let date = 1;
+            for (let i = 0; i < 6; i++) { // Max 6 rows needed for any month
+                let row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    let cell = document.createElement('td');
+
+                    if (i === 0 && j < startingDayOfWeek) {
+                        // Fill in empty cells before the 1st day of the month
+                        cell.classList.add('empty-cell');
+                        cell.innerHTML = '&nbsp;';
+                    } else if (date > daysInMonth) {
+                        // Stop filling cells once we pass the last day of the month
+                        cell.classList.add('empty-cell');
+                        cell.innerHTML = '&nbsp;';
+                    } else {
+                        cell.textContent = date;
+                        cell.classList.add('day-cell');
+                        if (isCurrentMonth && date === currentDay) {
+                            cell.classList.add('today');
+                        }
+
+                        date++; // Move to the next date
+                    }
+                    row.appendChild(cell);
+                }
+                
+                tableBody.appendChild(row);
+                if (date > daysInMonth && i > 0) {
+                    break;
+                }
+            }
+            table.appendChild(tableBody);
+            container.appendChild(table);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            populateMonthDropdown();
+            // Set default year to current year
+            document.getElementById('year-input').value = new Date().getFullYear();
+            generateCalendar(); // Generate calendar for the current month/year on load
+        });
+    </script>
+</body>
+</html>
